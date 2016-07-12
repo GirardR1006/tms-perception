@@ -29,14 +29,14 @@ A ROS Node that reads continiously informations from the ROS TMS Database.
 
 public class DbReaderClient extends AbstractNodeMain {
     private String TAG = "DbReaderClient";
-
     // DB Reader Client
     private ServiceClient<TmsdbGetDataRequest, TmsdbGetDataResponse> serviceClient;
-
     private ConnectedNode mConnectedNode;
     private Handler handler;
-
+    // Informations recovered from the TMS Database
     static public List<Tmsdb> Tmsdbs;
+    // Flag to notify the Object Detection Client that there is data to be read
+    static boolean DATA_READY;
     public DbReaderClient(Handler handler) {
         this.handler = handler;
     }
@@ -44,10 +44,10 @@ public class DbReaderClient extends AbstractNodeMain {
     static public List<Tmsdb> getTmsdbs(){
        return Tmsdbs;
     }
-
     static public void setTmsdbs(List<Tmsdb> input){
         Tmsdbs = input;
     }
+    static public boolean isDataReady(){return DATA_READY;}
 
     @Override
     public GraphName getDefaultNodeName() {
@@ -68,6 +68,11 @@ public class DbReaderClient extends AbstractNodeMain {
 
         mConnectedNode.executeCancellableLoop(new CancellableLoop() {
             @Override
+            protected void setup() {
+                DATA_READY=false;
+            }
+
+            @Override
             protected void loop() throws InterruptedException {
                 final TmsdbGetDataRequest request = serviceClient.newMessage();
                 request.getTmsdb().setId(7005);
@@ -77,7 +82,7 @@ public class DbReaderClient extends AbstractNodeMain {
                     public void onSuccess(TmsdbGetDataResponse response) {
                         Log.i(TAG, "Succeeded to call service");
                         Tmsdbs.add(response.getTmsdb().get(0));
-
+                        DATA_READY=true;
                     }
 
                     @Override

@@ -100,24 +100,21 @@ public class ObjectDetectionClient extends AbstractNodeMain {
                 Log.i(TAG, "Succeeded to call service");
                 List<object> objects = response.getObjects();
                 for (object obj : objects) {
-
                         int tl_x = obj.getRegion().getXOffset();
                         int tl_y = obj.getRegion().getYOffset();
                         int br_x = tl_x + obj.getRegion().getWidth();
                         int br_y = tl_y + obj.getRegion().getHeight();
                         rectangle(inputFrame, new Point(tl_x, tl_y), new Point(br_x, br_y), new Scalar(255, 255, 255), 2);
                         putText(inputFrame, "Houseware:" + obj.getClassName(), new Point(tl_x, tl_y + 30), Core.FONT_HERSHEY_COMPLEX, 1.0f, new Scalar(255, 0, 0), 2);
-
-                        int i = obj_infos.get(0).getId();
-                    /*
-                    for (Tmsdb obj_info : obj_infos) {
-                        int id = obj_info.getId();
-                     *//*   String score = obj_info.getNote();
-                        String time = obj_info.getTime();*//*
-                        putText(inputFrame, "ID:" + id, new Point(tl_x, br_y + 30), Core.FONT_HERSHEY_COMPLEX, 1.0f, new Scalar(0, 0, 255), 2);
-                 */
+                        if (DbReaderClient.DATA_READY = true) {
+                            for (Tmsdb obj_info : obj_infos) {
+                                int id = obj_info.getId();
+                                String score = obj_info.getNote();
+                                String time = obj_info.getTime();
+                                putText(inputFrame, "ID:" + id, new Point(tl_x, br_y + 30), Core.FONT_HERSHEY_COMPLEX, 1.0f, new Scalar(0, 0, 255), 2);
+                            }
+                        }
                 }
-
             }
 
             @Override
