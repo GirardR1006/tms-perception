@@ -20,6 +20,7 @@ dependencies {
     compile 'org.ros.rosjava_messages:sensor_msgs:[1.11)'
     compile files('../libs/tms_ss_rcnn-0.0.0.jar')
     compile files('../libs/tms_msg_db-1.0.2.jar')
+    compile files('../libs/rosjava_geometry-0.2.1.jar')
     compile project(':openCVLibrary2411')
     compile 'uk.co.chrisjenx:calligraphy:2.0.1'
 }
