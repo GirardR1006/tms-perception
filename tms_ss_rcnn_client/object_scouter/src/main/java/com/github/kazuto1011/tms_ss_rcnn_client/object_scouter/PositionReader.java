@@ -8,12 +8,14 @@ import org.ros.exception.RemoteException;
 import org.ros.exception.RosRuntimeException;
 import org.ros.exception.ServiceNotFoundException;
 import org.ros.message.MessageListener;
+import org.ros.message.Time;
 import org.ros.namespace.GraphName;
 import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
 import org.ros.node.service.ServiceClient;
 import org.ros.node.service.ServiceResponseListener;
 import org.ros.node.topic.Subscriber;
+import org.ros.rosjava_geometry.FrameTransform;
 import org.ros.rosjava_geometry.Quaternion;
 import org.ros.rosjava_geometry.Transform;
 
@@ -49,10 +51,26 @@ public class PositionReader extends AbstractNodeMain {
         return filteredVal;
     }
 
-
+    public Quaternion quaternionRPY (float roll, float pitch, float yaw){
+        float halfYaw = yaw *  0.5f;
+        float halfPitch =  pitch * 0.5f;
+        float halfRoll =  roll * 0.5f;
+        double cosYaw = Math.cos(halfYaw);
+        double sinYaw = Math.sin(halfYaw);
+        double cosPitch = Math.cos(halfPitch);
+        double sinPitch = Math.sin(halfPitch);
+        double cosRoll = Math.cos(halfRoll);
+        double sinRoll = Math.sin(halfRoll);
+        double x = sinRoll * cosPitch * cosYaw - cosRoll * sinPitch * sinYaw;
+        double y = cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw;
+        double z = cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw;
+        double w = cosRoll * cosPitch * cosYaw + sinRoll * sinPitch * sinYaw; //formerly yzx
+        Quaternion quat = new Quaternion(x,y,z,w);
+        return quat;
+    }
 
     @Override
-    public void onStart(ConnectedNode connectedNode) {
+    public void onStart(final ConnectedNode connectedNode) {
         super.onStart(connectedNode);
         Subscriber<TmsdbStamped> data_sub = connectedNode.newSubscriber("tms_db_data",TmsdbStamped._TYPE);
         data_sub.addMessageListener(new MessageListener<TmsdbStamped>() {
@@ -70,14 +88,10 @@ public class PositionReader extends AbstractNodeMain {
                 //id of the device used (Moverio or Oculus)
                 //Here we are using moverio only, so no need to make a choice.
                 int id = 1002;
-                /*
-                else if (choice == 0x02) { id = 1001; } // Oculus
-                else if (choice == 0x04) { id = 1001; } // Oculus DK2
-                else std::cerr << "Unexpected choice" << std::endl;
-                */
+
 
                 int msg_size = tmsdb.getTmsdb().size();
-//    std::cout << msg_size <<","<< id << std::endl;
+                //System.out.print(msg_size);
 
                 for(int i=0; i<msg_size; i++) {
                     if (tmsdb.getTmsdb().get(i).getId() == id) {
@@ -108,34 +122,16 @@ public class PositionReader extends AbstractNodeMain {
 
                         //transformation to send to Rviz
                         org.ros.rosjava_geometry.Vector3 translation = new org.ros.rosjava_geometry.Vector3(x,y,z);
-                        Quaternion rotation = new Quaternion();
+                        Quaternion rotation = quaternionRPY(-rr, -rp, ry);
+
+                        Transform transform = new Transform(translation,rotation);
 
 
-                        Transform transform;
-                        void setRPY(const tfScalar& roll, const tfScalar& pitch, const tfScalar& yaw){
-                                    tfScalar halfYaw = tfScalar(yaw) * tfScalar(0.5);
-                                    tfScalar halfPitch = tfScalar(pitch) * tfScalar(0.5);
-                                    tfScalar halfRoll = tfScalar(roll) * tfScalar(0.5);
-                                    tfScalar cosYaw = tfCos(halfYaw);
-                                    tfScalar sinYaw = tfSin(halfYaw);
-                                    tfScalar cosPitch = tfCos(halfPitch);
-                                    tfScalar sinPitch = tfSin(halfPitch);
-                                    tfScalar cosRoll = tfCos(halfRoll);
-                                    tfScalar sinRoll = tfSin(halfRoll);
-                                    setValue(sinRoll * cosPitch * cosYaw - cosRoll * sinPitch * sinYaw, //x
-                                            cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw, //y
-                                            cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw, //z
-                                            cosRoll * cosPitch * cosYaw + sinRoll * sinPitch * sinYaw); //formerly yzx
-                                }
+                        FrameTransform sendTransform = new FrameTransform(transform,GraphName.of("map"),GraphName.of("oculus_plugin"), connectedNode.getCurrentTime());
+                        FrameTransform sendOtherTransform = new FrameTransform(transform,GraphName.of("start_position"),GraphName.of("oculus_plugin"), connectedNode.getCurrentTime());
 
-                        q.setRPY(-rr, -rp, ry);
 
-                        transform.setRotation(q);
-
-                        brOc.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "map", "oculus_plugin"));
-                        brOc.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "start_position", "oculus_plugin"));
-
-                        ocubar->x = x * 1000;
+/*                        ocubar->x = x * 1000;
                         ocubar->y = y * 1000;
                         ocubar->z = z * 1000;
                         ocubar->rr = -rr;
@@ -150,7 +146,7 @@ public class PositionReader extends AbstractNodeMain {
                         z_old = ocubar->z;
                         ocubar->x_old = x_old;
                         ocubar->y_old = y_old;
-                        ocubar->z_old = z_old;
+                        ocubar->z_old = z_old;*/
 
                     }
                 }
