@@ -1,32 +1,17 @@
 package com.github.kazuto1011.tms_ss_rcnn_client.object_scouter;
 
 import android.os.Handler;
-import android.util.Log;
 
-import org.ros.concurrent.CancellableLoop;
-import org.ros.exception.RemoteException;
-import org.ros.exception.RosRuntimeException;
-import org.ros.exception.ServiceNotFoundException;
 import org.ros.message.MessageListener;
-import org.ros.message.Time;
 import org.ros.namespace.GraphName;
 import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
-import org.ros.node.service.ServiceClient;
-import org.ros.node.service.ServiceResponseListener;
 import org.ros.node.topic.Subscriber;
 import org.ros.rosjava_geometry.FrameTransform;
 import org.ros.rosjava_geometry.Quaternion;
 import org.ros.rosjava_geometry.Transform;
 
 
-import java.util.List;
-
-import geometry_msgs.Vector3;
-import tms_msg_db.Tmsdb;
-import tms_msg_db.TmsdbGetData;
-import tms_msg_db.TmsdbGetDataRequest;
-import tms_msg_db.TmsdbGetDataResponse;
 import tms_msg_db.TmsdbStamped;
 
 /*

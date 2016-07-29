@@ -94,6 +94,7 @@ public class ObjectDetectionClient extends AbstractNodeMain {
         final tms_ss_rcnn.obj_detectionRequest request = serviceClient.newMessage();
         setCompressedImage(inputFrame, request);
         final List<Tmsdb> obj_infos = DbReaderClient.getTmsdbs();
+        final int msg_size = obj_infos.size();
         serviceClient.call(request, new ServiceResponseListener<obj_detectionResponse>() {
             @Override
             public void onSuccess(final obj_detectionResponse response) {
@@ -107,10 +108,11 @@ public class ObjectDetectionClient extends AbstractNodeMain {
                         rectangle(inputFrame, new Point(tl_x, tl_y), new Point(br_x, br_y), new Scalar(255, 255, 255), 2);
                         putText(inputFrame, "Houseware:" + obj.getClassName(), new Point(tl_x, tl_y + 30), Core.FONT_HERSHEY_COMPLEX, 1.0f, new Scalar(255, 0, 0), 2);
                         if (DbReaderClient.DATA_READY = true) {
-                            for (Tmsdb obj_info : obj_infos) {
-                                int id = obj_info.getId();
-                                String score = obj_info.getNote();
-                                String time = obj_info.getTime();
+
+                            for (int i=0; i<msg_size; i++) {
+                                int id = obj_infos.get(i).getId();
+                                String score = obj_infos.get(i).getNote();
+                                String time = obj_infos.get(i).getTime();
                                 putText(inputFrame, "ID:" + id, new Point(tl_x, br_y + 30), Core.FONT_HERSHEY_COMPLEX, 1.0f, new Scalar(0, 0, 255), 2);
                             }
                         }

@@ -189,6 +189,7 @@ public class ObjectScouter extends RosActivity implements CameraBridgeViewBase.C
         //nodeMainExecutor.execute(dbReaderClient, nodeConfiguration);
 
 
+
         //if found faster_rcnn service
         mCameraView.setCvCameraViewListener(this);
     }
